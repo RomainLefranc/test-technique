@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ordinateur{% endblock %}
+
+{% block body %}
+    <div class="mt-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Ordinateur</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="/ordinateur/creer" class="btn btn-success mt-2">Ajouter</a>
+    <div class="row mt-2">
+        {% for ordinateur in ordinateurs %}
+            <div class="card m-2" style="width: 18rem;">
+                <div class="card-body">
+                    <p class="card-text">
+                        <h2>{{ordinateur.modele}}</h2>
+                    </p>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="/ordinateur/{{ ordinateur.id}}/modifier" class="btn btn-primary">Modifier</a>
+                        <a href="/ordinateur/{{ ordinateur.id}}/supprimer" class="btn btn-danger">Supprimer</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

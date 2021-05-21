@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Attribution{% endblock %}
+
+{% block stylesheets %}
+     {{ parent() }}
+     {{ encore_entry_link_tags('calendar') }}
+{% endblock %}
+
+{% block javascripts %}
+     {{ parent() }}
+     {{ encore_entry_script_tags('calendar') }}
+{% endblock %}
+
+ {% block body %}
+     <div class="mt-2">
+          <nav aria-label="breadcrumb">
+               <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Attribution</li>
+               </ol>
+          </nav>
+     </div> 
+     <div class="jumbotron">
+          <h1 class="display-4">Information</h1>
+          <p class="lead">
+               Ajout d'attribution :<br>
+               
+               Maintenez le clic d'un horaire a un autre pour ouvrir une modal d'ajout<br><br>
+
+               Suppression d'attribution :<br>
+
+               Cliquez sur une attribution pour ouvrir une modal et ainsi pouvoir le supprimer
+          </p>
+     </div>
+     
+     {# Full calendar #}
+    <div id="calendar" class="mt-2">
+    </div>
+
+     {# Modal Ajout #}
+    <div class="modal" tabindex="-1" role="dialog" id="create">
+          <div class="modal-dialog" role="document">
+               <div class="modal-content">
+                    <div class="modal-header">
+                         <h5 class="modal-title">Ajout de reservation</h5>
+                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                         </button>
+                    </div>
+                    <div class="modal-body">
+                         {{form_start(form)}}
+
+                         {{form_row(form.user)}}
+                         {{form_row(form.ordinateur)}}
+                         {{form_row(form.dateDebut)}}
+                         {{form_row(form.dateFin)}}
+                         <div class="modal-footer">
+                              <button type="submit" class="btn btn-primary">Ajouter</button>
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                         </div>
+                         {{form_end(form)}}
+                    </div>
+                    
+               </div>
+          </div>
+     </div>
+
+     {# Modal Détails + supprimer #}
+     <div class="modal" tabindex="-1" role="dialog" id="read">
+          <div class="modal-dialog" role="document">
+               <div class="modal-content">
+                    <div class="modal-header">
+                         <h5 class="modal-title">Détail</h5>
+                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                         </button>
+                    </div>
+                    <div class="modal-body">
+                         <form>
+                              <div class="modal-body">
+                                   <p id="title"></p>
+                                   <p id="dateDebut"></p>
+                                   <p id="dateFin"></p>
+                              </div>
+                              <div class="modal-footer">
+                                   <button type="submit" class="btn btn-primary">Supprimer</button>
+                                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                              </div>
+                         </form>
+                    </div>
+                    
+               </div>
+          </div>
+     </div>
+{% endblock %}

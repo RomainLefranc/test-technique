@@ -1,0 +1,28 @@
+{
+  "entrypoints": {
+    "app": {
+      "js": [
+        "/build/runtime.js",
+        "/build/vendors-node_modules_core-js_internals_array-iteration_js-node_modules_core-js_internals_expo-068ae3.js",
+        "/build/vendors-node_modules_symfony_stimulus-bridge_dist_index_js-node_modules_bootstrap_dist_js_boo-c8c190.js",
+        "/build/app.js"
+      ],
+      "css": [
+        "/build/vendors-node_modules_symfony_stimulus-bridge_dist_index_js-node_modules_bootstrap_dist_js_boo-c8c190.css",
+        "/build/app.css"
+      ]
+    },
+    "calendar": {
+      "js": [
+        "/build/runtime.js",
+        "/build/vendors-node_modules_core-js_internals_array-iteration_js-node_modules_core-js_internals_expo-068ae3.js",
+        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-993dff.js",
+        "/build/calendar.js"
+      ],
+      "css": [
+        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-993dff.css",
+        "/build/calendar.css"
+      ]
+    }
+  }
+}
