@@ -3,158 +3,172 @@
 namespace App\Controller;
 
 use App\Entity\Attribution;
+use App\Form\AttributionType;
 use App\Repository\AttributionRepository;
-use App\Repository\OrdinateurRepository;
-use App\Repository\UserRepository;
-use DateTime;
-use DateTimeZone;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Form;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Required;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 class ApiController extends AbstractController
 {
-
-
     /**
      * @Route("/api/attribution", name="api_attribution_home", methods={"POST"})
      */
-    public function index(AttributionRepository $attributionRepository, NormalizerInterface $normalizer, Request $request, ValidatorInterface $validator) {
-        
-        $jsonReçu = $request->getContent();
-        $donnees = json_decode($jsonReçu);
-    
-  /*       $constraint = new Assert\Collection([
-            'start' =>  new Assert\DateTime("Y-m-d'T'H:i:s'.000Z'"),
-            'end' => new Assert\DateTime('c')
-        ]);
+    public function index(AttributionRepository $attributionRepository, NormalizerInterface $normalizer, Request $request = null) 
+    {
+        /* récupération des données */
+        $json = $request->getContent();
+        $data = json_decode($json, true);
+        $form = $this->createFormBuilder(null, ['csrf_protection' => false])
 
-        $errors = $validator->validate(
-            ['start' => $donnees->start, 'end' => $donnees->end],
-            $constraint
-        );
+            ->add('dateDebut', DateTimeType::class, [
+                'date_widget' => 'single_text',
+                'constraints' => [
+                    new NotBlank(),
+                    new NotNull()
+                ]
+            ])
+            ->add('dateFin', DateTimeType::class, [
+                'date_widget' => 'single_text',
+                'constraints' => [
+                    new NotBlank(),
+                    new NotNull(),
+                    new GreaterThanOrEqual([
+                        'propertyPath' => 'parent.all[dateDebut].data'
+                    ])
+                ]
+            ])
+            ->getForm();
+        $form->submit($data);
 
-        if(count($errors) > 0) {
-            //Return bad fields
-            $errorsString = (string) $errors;
-            return $this->json($errorsString, 400);
-        } */
-     
-        $attributions = $attributionRepository->getAttribution($donnees->start, $donnees->end);
-        $attributionsNormalise = $normalizer->normalize($attributions, null, ['groups' => 'attribution:read']);
-        $data = [];
-        foreach ($attributionsNormalise as $attribution) {
-            $data[] = [
-                'id' => $attribution['id'],
-                'title' => 'Réservation de '. $attribution['ordinateur']['modele'] ." par ". $attribution['user']['email'],
-                'start' => $attribution['dateDebut'],
-                'end' => $attribution['dateFin']
-            ];
+        if ($form->isValid()) {
+
+            $donnees = $form->getData();
+            
+            $attributions = $attributionRepository->getAttribution($donnees["dateDebut"], $donnees["dateFin"]);
+            $attributionsNormalise = $normalizer->normalize($attributions, null, ['groups' => 'attribution:read']);
+            $data = [];
+            foreach ($attributionsNormalise as $attribution) {
+                $data[] = [
+                    'id' => $attribution['id'],
+                    'title' => 'Réservation de '. $attribution['ordinateur']['modele'] ." par ". $attribution['user']['email'],
+                    'start' => $attribution['dateDebut'],
+                    'end' => $attribution['dateFin']
+                ];
+            }
+            return new JsonResponse($data,200);
         }
-        $json = json_encode($data);
 
-        $response = new Response($json, 200, [
-            'Content-Type' => "application/json"
-        ]);
+        $errors = array();
 
-        return $response;
+        foreach ($form->getErrors() as $key => $error) {
+            if ($form->isRoot()) {
+                $errors['#'][] = $error->getMessage();
+            } else {
+                $errors[] = $error->getMessage();
+            }
+        }
+        foreach ($form->all() as $child) {
+            if (!$child->isValid()) {
+                $errors[$child->getName()] = $this->getErrorMessages($child);
+            }
+        }
+
+        return new JsonResponse([
+            "errors" => $errors
+        ],400);
     }
 
     /**
      * @Route("/api/attribution/create", name="api_attribution_create", methods={"POST"})
      */
-    public function create(
-        UserRepository $userRepository, 
-        OrdinateurRepository $ordinateurRepository, 
-        AttributionRepository $attributionRepository,
-        EntityManagerInterface $manager, 
-        Request $request, 
-        SerializerInterface $serializer) {
+    public function create(EntityManagerInterface $manager, Request $request = null) 
+    {
+        $json = $request->getContent();
+        $data = json_decode($json, true);
 
-        $jsonReçu = $request->getContent();
-        $donnees = json_decode($jsonReçu);
-        $date = new DateTime('now', new DateTimeZone('Indian/Reunion'));
-        $date = $date->format(DateTime::ATOM);
-        
-        /* Si la date de debut est passé */
-        if ($donnees->dateDebut < $date) {
-            return new Response('date passé', 200, [
-                'Content-Type' => "application/json"
-            ]);
-        }
-        
-        /* Si il y a déjà une reservation pour cette ordinateur dans ce creneau horaire */
-        $test = $attributionRepository->creneaulibre($donnees->ordinateur->id,$donnees->dateDebut, $donnees->dateFin);
-        if ($test[0][1] >= 1) {
-            $json = [
-                'reponse' => 'ordinateur non disponible'
-            ];
-            $json = json_encode($json);
-    
-            $response = new Response($json, 200, [
-                'Content-Type' => "application/json"
-            ]);
-            return $response;
+        $attribution = new Attribution();
+        $form = $this->createForm(AttributionType::class, $attribution);
+
+        $form->submit($data);
+
+        if ($form->isValid()) {
+            $manager->persist($attribution);
+            $manager->flush(); 
+            return new JsonResponse([
+                "type" => 'success',
+                "message" => 'ajout effectuée'
+            ],200);
         }
 
-
-        $attribution = $serializer->deserialize($jsonReçu, Attribution::class, 'json');
-        $attribution->setOrdinateur($ordinateurRepository->find($donnees->ordinateur->id));
-        $attribution->setUser($userRepository->find($donnees->user->id));
-
-
-        $manager->persist($attribution);
-        $manager->flush();
-        
-        
-        $json = [
-            'reponse' => 'ajout effectuée'
-        ];
-        $json = json_encode($json);
-
-        $response = new Response($json, 200, [
-            'Content-Type' => "application/json"
-        ]);
-
-        return $response;
+        return new JsonResponse([
+            "type" => "danger",
+            "message" => $form->getErrors(true)->__toString()
+        ],400);
     }
 
     /**
      * @Route("/api/attribution/{id}/delete", name="api_attribution_delete", methods={"DELETE"})
      */
-    public function delete(Attribution $attribution, EntityManagerInterface $manager) {
+    public function delete(Attribution $attribution = null, EntityManagerInterface $manager) 
+    {
+        if ($attribution == null) {
+            return new JsonResponse([
+                "type" => 'danger',
+                "message" => 'Attribution invalide'
+            ],400);
+        }
 
         $manager->remove($attribution);
         $manager->flush();
-
-        $json = [
-            'reponse' => 'suppression effectuée'
-        ];
-        $json = json_encode($json);
-
-        $response = new Response($json, 200, [
-            'Content-Type' => "application/json"
-        ]);
-
-        return $response;
+        return new JsonResponse([
+            "type" => 'success',
+            "message" => 'suppression effectuée'
+        ],200);
     }
 
-        /**
+    /**
      * @Route("/api/attribution/{id}/read", name="api_attribution_read", methods={"GET"})
      */
-    public function read(Attribution $attribution) {
-
+    public function read(Attribution $attribution = null) 
+    {
+        if ($attribution == null) {
+            return new JsonResponse([
+                "type" => 'danger',
+                "message" => 'Attribution invalide'
+            ],400);
+        }
+        
         return $this->json($attribution,200, [], ['groups' => 'attribution:read']);
-
     }
 
+    public function getErrorMessages(Form $form) {
+        $errors = array();
+    
+        foreach ($form->getErrors() as $key => $error) {
+            if ($form->isRoot()) {
+                $errors['#'][] = $error->getMessage();
+            } else {
+                $errors[] = $error->getMessage();
+            }
+        }
+    
+        foreach ($form->all() as $child) {
+            if (!$child->isValid()) {
+                $errors[$child->getName()] = $this->getErrorMessages($child);
+            }
+        }
+    
+        return $errors;
+    }
+    
 }

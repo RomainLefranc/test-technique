@@ -33,13 +33,13 @@
                Cliquez sur une attribution pour ouvrir une modal et ainsi pouvoir le supprimer
           </p>
      </div>
-     
+
      {# Full calendar #}
-    <div id="calendar" class="mt-2">
-    </div>
+     <div id="calendar" class="mt-2">
+     </div>
 
      {# Modal Ajout #}
-    <div class="modal" tabindex="-1" role="dialog" id="create">
+    <div class="modal" tabindex="-1" role="dialog" id="modal_create">
           <div class="modal-dialog" role="document">
                <div class="modal-content">
                     <div class="modal-header">
@@ -49,17 +49,18 @@
                          </button>
                     </div>
                     <div class="modal-body">
-                         {{form_start(form)}}
-
+                         {{ form_start(form, { 'attr' : { 'id': 'form_create' } }) }}
                          {{form_row(form.user)}}
                          {{form_row(form.ordinateur)}}
                          {{form_row(form.dateDebut)}}
                          {{form_row(form.dateFin)}}
+                         <div id="erreur"></div>
                          <div class="modal-footer">
                               <button type="submit" class="btn btn-primary">Ajouter</button>
                               <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
                          </div>
                          {{form_end(form)}}
+                         
                     </div>
                     
                </div>
@@ -67,7 +68,7 @@
      </div>
 
      {# Modal Détails + supprimer #}
-     <div class="modal" tabindex="-1" role="dialog" id="read">
+     <div class="modal" tabindex="-1" role="dialog" id="modal_delete">
           <div class="modal-dialog" role="document">
                <div class="modal-content">
                     <div class="modal-header">
@@ -77,7 +78,7 @@
                          </button>
                     </div>
                     <div class="modal-body">
-                         <form>
+                         <form id="form_delete">
                               <div class="modal-body">
                                    <p id="title"></p>
                                    <p id="dateDebut"></p>

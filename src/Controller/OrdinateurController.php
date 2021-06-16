@@ -38,11 +38,10 @@ class OrdinateurController extends AbstractController
         }
 
         $form = $this->createForm(OrdinateurType::class, $ordinateur);
-
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $manager->persist($ordinateur);
             $manager->flush();
 
@@ -61,7 +60,6 @@ class OrdinateurController extends AbstractController
 
         $manager->remove($ordinateur);
         $manager->flush();
-
         return $this->redirectToRoute('ordinateur');
 
     }

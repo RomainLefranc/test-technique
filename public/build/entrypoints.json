@@ -16,11 +16,11 @@
       "js": [
         "/build/runtime.js",
         "/build/vendors-node_modules_core-js_internals_array-iteration_js-node_modules_core-js_internals_expo-068ae3.js",
-        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-993dff.js",
+        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-6c0e48.js",
         "/build/calendar.js"
       ],
       "css": [
-        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-993dff.css",
+        "/build/vendors-node_modules_fullcalendar_core_locales_fr_js-node_modules_fullcalendar_core_main_js-n-6c0e48.css",
         "/build/calendar.css"
       ]
     }

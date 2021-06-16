@@ -2,13 +2,16 @@
 
 namespace App\Entity;
 
-use App\Repository\AttributionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator as AcmeAssert;
+use DateTime;
+use DateTimeZone;
 /**
  * @ORM\Table(name="attribution")
- * @ORM\Entity(repositoryClass=AttributionRepository::class)
+ * @ORM\Entity(repositoryClass="App\Repository\AttributionRepository")
+ * @AcmeAssert\ContainsCreneau
  */
 class Attribution
 {
@@ -24,6 +27,8 @@ class Attribution
      * @ORM\ManyToOne(targetEntity=Ordinateur::class, inversedBy="attributions",cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      * @Groups("attribution:read")
+     * @Assert\NotNull
+     * 
      */
     private $ordinateur;
 
@@ -31,18 +36,23 @@ class Attribution
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="attributions",cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      * @Groups("attribution:read")
+     * @Assert\NotNull
      */
     private $user;
 
     /**
      * @ORM\Column(type="datetime")
      * @Groups("attribution:read")
+     * @Assert\NotNull
+     * @Assert\GreaterThan("+4 hours")
      */
     private $dateDebut;
 
     /**
      * @ORM\Column(type="datetime")
      * @Groups("attribution:read")
+     * @Assert\NotNull
+     * @Assert\GreaterThan(propertyPath="dateDebut")
      */
     private $dateFin;
 

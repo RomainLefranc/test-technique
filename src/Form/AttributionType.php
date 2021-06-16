@@ -41,6 +41,7 @@ class AttributionType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Attribution::class,
+            'csrf_protection' => false
         ]);
     }
 }
